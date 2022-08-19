@@ -1,19 +1,34 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.7;
+pragma solidity 0.8.7; // 指定solidity版本其他版本會導致編譯錯誤
 
+// npm i @openzeppelin/contracts
+// IERC20(interface): Interface of the ERC20 standard as defined in the EIP.
+// SafeERC20(library): Wrappers around ERC20 operations that throw on failure (when the token contract returns false).
+// Math(library): Standard math utilities missing in the Solidity language.
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+// BasePool(abstract contract)
+// ITimeLockPool(interface)
 import "./base/BasePool.sol";
 import "./interfaces/ITimeLockPool.sol";
 
+// TimeLockPool繼承自BasePool抽象合約, 以及ITimeLockPool接口
 contract TimeLockPool is BasePool, ITimeLockPool {
+    // Math是以更標準的方式實現數學運算
+    // 將名為Math的library裡面撰寫的函式使用在uint256型態的變數上，將uint256型態的變數作為函式第一個參數傳入
     using Math for uint256;
+    // SafeERC20是以更安全的方式實現Transfer/Approve，當低級調用失敗時發出錯誤訊息並將transaction revert
+    // 將名為SafeERC20的library裡面撰寫的函式使用在IERC20型態的變數上，將IERC20型態的變數作為函式第一個參數傳入
     using SafeERC20 for IERC20;
 
+    // 宣告 公共 uint256型態 名為maxBonus的不可變量
     uint256 public immutable maxBonus;
+    // 宣告 公共 uint256型態 名為maxLockDuration的不可變量
     uint256 public immutable maxLockDuration;
+    // 宣告 公共 uint256型態 名為MIN_LOCK_DURATION的不可變量
+    // MIN_LOCK_DURATION 最少鎖倉期限
     uint256 public constant MIN_LOCK_DURATION = 10 minutes;
     
     mapping(address => Deposit[]) public depositsOf;
