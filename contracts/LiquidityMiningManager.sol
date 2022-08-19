@@ -107,6 +107,7 @@ contract LiquidityMiningManager is TokenSaver {
         emit RewardsPerSecondSet(_rewardPerSecond);
     }
 
+    // Example => https://etherscan.io/tx/0x037d1c82d0cc945df6a65a9639a04a6bfc4b20a8ff39ed68defd0f0235494b5a
     function distributeRewards() public onlyRewardDistributor {
         uint256 timePassed = block.timestamp - lastDistribution;
         uint256 totalRewardAmount = rewardPerSecond * timePassed;
