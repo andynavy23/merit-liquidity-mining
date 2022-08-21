@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7; // 指定solidity版本其他版本會導致編譯錯誤
+// 版本特點block.basefee可以查看目前區塊的基本費用
 
 // npm i @openzeppelin/contracts
 // IERC20(interface): Interface of the ERC20 standard as defined in the EIP.

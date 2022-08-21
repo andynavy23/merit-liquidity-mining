@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7; // 指定solidity版本其他版本會導致編譯錯誤
+// 版本特點block.basefee可以查看目前區塊的基本費用
 
 // npm i @openzeppelin/contracts
 // IERC20(interface): Interface of the ERC20 standard as defined in the EIP.
@@ -24,20 +25,32 @@ contract TimeLockPool is BasePool, ITimeLockPool {
     using SafeERC20 for IERC20;
 
     // 宣告 公共 uint256型態 名為maxBonus的不可變量
+    // maxBonus 最大獎勵數量
     uint256 public immutable maxBonus;
     // 宣告 公共 uint256型態 名為maxLockDuration的不可變量
+    // maxLockDuration 最長鎖倉期限
     uint256 public immutable maxLockDuration;
     // 宣告 公共 uint256型態 名為MIN_LOCK_DURATION的不可變量
     // MIN_LOCK_DURATION 最少鎖倉期限
     uint256 public constant MIN_LOCK_DURATION = 10 minutes;
     
+    // 宣告 公共 mapping型態 名為depositsOf的動態大小的字典
+    // key為 address型態
+    // value為 Deposit陣列型態 
+    // 每個錢包地址存入的代幣記錄
     mapping(address => Deposit[]) public depositsOf;
 
+    // 枚舉名為Deposit的資料結構
+    // 包含uint256型態的amount變數
+    // 包含uint64型態的start變數
+    // 包含uint64型態的end變數
     struct Deposit {
         uint256 amount;
         uint64 start;
         uint64 end;
     }
+    // 構造函式, 創建合約時首先執行的函式
+    // 繼承的父合約的構造函式需要填入參數時也需要在這邊填入
     constructor(
         string memory _name,
         string memory _symbol,
@@ -49,21 +62,52 @@ contract TimeLockPool is BasePool, ITimeLockPool {
         uint256 _maxBonus,
         uint256 _maxLockDuration
     ) BasePool(_name, _symbol, _depositToken, _rewardToken, _escrowPool, _escrowPortion, _escrowDuration) {
+        // _maxLockDuration(最長鎖倉期限)變量狀態檢查不能小於十分鐘
         require(_maxLockDuration >= MIN_LOCK_DURATION, "TimeLockPool.constructor: max lock duration must be greater or equal to mininmum lock duration");
+        // 透過構造函式中填入的uint256型態參數_maxBonus, 設定給公共 uint256型態 名為maxBonus的不可變量
         maxBonus = _maxBonus;
+        // 透過構造函式中填入的uint256型態參數_maxLockDuration, 設定給公共 uint256型態 名為maxLockDuration的不可變量
         maxLockDuration = _maxLockDuration;
     }
 
+    // 宣告 名為Deposited事件 顯示在日誌上的參數為
+    // uint256型態 amount參數內容 寫在data裡
+    // uint256型態 duration參數內容 寫在data裡
+    // address型態 receiver參數內容 寫在topics裡
+    // address型態 from參數內容 寫在topics裡
+    // Example => https://etherscan.io/tx/0xc95e3ce67beeefd36b6c20f5d619e1552e7a11349823a9f6693245a9e0a6f345
+    // topics 有索引可以分開decode
+    // data 全部hax會合在一起, 需要另外處理分開不同數值
     event Deposited(uint256 amount, uint256 duration, address indexed receiver, address indexed from);
+    // 宣告 名為Withdrawn事件 顯示在日誌上的參數為
+    // uint256型態 depositId參數內容 寫在topics裡
+    // address型態 receiver參數內容 寫在topics裡
+    // address型態 from參數內容 寫在topics裡
+    // uint256型態 amount參數內容 寫在data裡
+    // Example => https://etherscan.io/tx/0xd4690796d6fe7aeebc809bc27a991f9ebda3b0b4ce2571be7ad79c097a9ab01c
+    // topics 有索引可以分開decode
+    // data 全部hax會合在一起, 需要另外處理分開不同數值
     event Withdrawn(uint256 indexed depositId, address indexed receiver, address indexed from, uint256 amount);
 
+    /**
+    * 質押代幣函式 繼承自ITimeLockPool 覆寫 外部函式(不對內呼叫)
+    * @param _amount uint256型態 質押數量
+    * @param _duration uint256型態 鎖倉時間
+    * @param _receiver address型態 接收獎勵者
+    */
     function deposit(uint256 _amount, uint256 _duration, address _receiver) external override {
+        // _amount(質押數量)變量狀態檢查不能小於等於0
         require(_amount > 0, "TimeLockPool.deposit: cannot deposit 0");
+        // duration(鎖倉期限)
+        // 輸入參數的_duration(鎖倉時間)與maxLockDuration(最長鎖倉期限)做比較選擇較低者
         // Don't allow locking > maxLockDuration
         uint256 duration = _duration.min(maxLockDuration);
+        // 輸入參數的duration(鎖倉時間)與MIN_LOCK_DURATION(最短鎖倉期限)做比較選擇較高者
         // Enforce min lockup duration to prevent flash loan or MEV transaction ordering
         duration = duration.max(MIN_LOCK_DURATION);
 
+        // 質押代幣執行safeTransferFrom(安全轉移函式)
+        // 將質押代幣從呼叫deposit函式者轉移至目前合約
         depositToken.safeTransferFrom(_msgSender(), address(this), _amount);
 
         depositsOf[_receiver].push(Deposit({
@@ -78,7 +122,13 @@ contract TimeLockPool is BasePool, ITimeLockPool {
         emit Deposited(_amount, duration, _receiver, _msgSender());
     }
 
+    /**
+    * 提取質押代幣函式 繼承自ITimeLockPool 覆寫 外部函式(不對內呼叫)
+    * @param _depositId uint256型態 質押ID
+    * @param _receiver address型態 接收質押代幣者
+    */
     function withdraw(uint256 _depositId, address _receiver) external {
+        // _depositId(質押ID)變量狀態檢查不能小於等於depositsOf(每個錢包地址存入的代幣記錄)長度
         require(_depositId < depositsOf[_msgSender()].length, "TimeLockPool.withdraw: Deposit does not exist");
         Deposit memory userDeposit = depositsOf[_msgSender()][_depositId];
         require(block.timestamp >= userDeposit.end, "TimeLockPool.withdraw: too soon");

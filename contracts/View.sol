@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
+// 版本特點block.basefee可以查看目前區塊的基本費用
 
 import "./LiquidityMiningManager.sol";
 import "./TimeLockPool.sol";
