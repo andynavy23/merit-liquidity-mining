@@ -4,6 +4,7 @@ import sleep from "../../utils/sleep";
 
 const VERIFY_DELAY = 100000;
 
+// 任務名稱 deploy-view view合約部屬
 task("deploy-view")
     .addParam("liquidityMiningManager", "Address of the liquidity mining manager contract")
     .addParam("escrowPool", "Address of the escrow pool")

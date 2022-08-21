@@ -21,6 +21,8 @@ const ESCROW_DURATION = 60 * 60 * 24 * 365; // 1 year
 
 const INITIAL_MINT = parseEther("1000000000");
 
+// describe("text", () => {before, beforeEach, it, describe}) 為大單元測試
+// it("text", () => {expect()...}) 為小單元測試
 describe("BasePool", function () {
     this.timeout(300000000);
 

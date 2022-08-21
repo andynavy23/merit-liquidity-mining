@@ -47,7 +47,7 @@ contract TokenSaver is AccessControlEnumerable {
     }
 
     /**
-    * 白名單轉移代幣函式 外部函式(不對內呼叫)
+    * 白名單轉移代幣函式 外部函式(不對內呼叫) 只有擁有TOKEN_SAVER_ROLE角色的錢包地址可以呼叫函式
     * @param _token address型態 被轉移的代幣
     * @param _receiver address型態 接收代幣者
     * @param _amount uint256型態 轉移代幣數量

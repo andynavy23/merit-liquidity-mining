@@ -5,6 +5,7 @@ import sleep from "../../utils/sleep";
 
 const VERIFY_DELAY = 100000;
 
+// 任務名稱 deploy-time-lock-non-transferable-pool timeLockNonTransferablePool合約部屬
 task("deploy-time-lock-non-transferable-pool")
     .addParam("name", "Name of the staking pool")
     .addParam("symbol", "Symbol of the staking pool")

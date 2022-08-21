@@ -41,9 +41,9 @@ contract TimeLockPool is BasePool, ITimeLockPool {
     mapping(address => Deposit[]) public depositsOf;
 
     // 枚舉名為Deposit的資料結構
-    // 包含uint256型態的amount變數
-    // 包含uint64型態的start變數
-    // 包含uint64型態的end變數
+    // 包含uint256型態的amount變數 質押數量
+    // 包含uint64型態的start變數 質押開始時間
+    // 包含uint64型態的end變數 鎖倉結束時間
     struct Deposit {
         uint256 amount;
         uint64 start;
@@ -110,15 +110,19 @@ contract TimeLockPool is BasePool, ITimeLockPool {
         // 將質押代幣從呼叫deposit函式者轉移至目前合約
         depositToken.safeTransferFrom(_msgSender(), address(this), _amount);
 
+        // 將此次質押記錄到對應地址的陣列
         depositsOf[_receiver].push(Deposit({
             amount: _amount,
             start: uint64(block.timestamp),
             end: uint64(block.timestamp) + uint64(duration)
         }));
 
+        // mintAmount(質押產生的代幣數量)
         uint256 mintAmount = _amount * getMultiplier(duration) / 1e18;
 
+        // 執行鑄造代幣函式
         _mint(_receiver, mintAmount);
+        // 記錄Deposited事件
         emit Deposited(_amount, duration, _receiver, _msgSender());
     }
 
@@ -130,30 +134,52 @@ contract TimeLockPool is BasePool, ITimeLockPool {
     function withdraw(uint256 _depositId, address _receiver) external {
         // _depositId(質押ID)變量狀態檢查不能小於等於depositsOf(每個錢包地址存入的代幣記錄)長度
         require(_depositId < depositsOf[_msgSender()].length, "TimeLockPool.withdraw: Deposit does not exist");
+        // 將_depositId(質押ID)對應的記錄取出存到userDeposit
         Deposit memory userDeposit = depositsOf[_msgSender()][_depositId];
+        // block.timestamp(當前區塊時間)檢查不能小於鎖倉結束時間
         require(block.timestamp >= userDeposit.end, "TimeLockPool.withdraw: too soon");
 
-        //                      No risk of wrapping around on casting to uint256 since deposit end always > deposit start and types are 64 bits
+        // shareAmount(燃燒代幣數量)
+        // 燃燒代幣數量 = 質押代幣數量 * (鎖倉應得到權重乘數 / 基數)
+        // No risk of wrapping around on casting to uint256 since deposit end always > deposit start and types are 64 bits
         uint256 shareAmount = userDeposit.amount * getMultiplier(uint256(userDeposit.end - userDeposit.start)) / 1e18;
 
+        // 將最後一筆質押記錄取代至_depositId(質押ID)位置
         // remove Deposit
         depositsOf[_msgSender()][_depositId] = depositsOf[_msgSender()][depositsOf[_msgSender()].length - 1];
+        // 丟棄最後一筆質押記錄
         depositsOf[_msgSender()].pop();
 
+        // 執行燃燒代幣函式
         // burn pool shares
         _burn(_msgSender(), shareAmount);
         
+        // 質押代幣執行safeTransferFrom(安全轉移函式)
+        // 將質押代幣從目前合約轉移至_receiver
         // return tokens
         depositToken.safeTransfer(_receiver, userDeposit.amount);
+        // 記錄Withdrawn事件
         emit Withdrawn(_depositId, _receiver, _msgSender(), userDeposit.amount);
     }
 
+    /**
+    * 查詢鎖倉區間應得到權重乘數函式 只讀 公共外部函式
+    * @param _lockDuration uint256型態 鎖倉區間
+    */
     function getMultiplier(uint256 _lockDuration) public view returns(uint256) {
+        // 基數 + (最大獎勵數 * 鎖倉區間 / 最大鎖倉期限)
         return 1e18 + (maxBonus * _lockDuration / maxLockDuration);
     }
 
+    /**
+    * 查詢特定錢包地址總共質押代幣數量函式 只讀 公共外部函式
+    * @param _account address型態 錢包地址
+    */
     function getTotalDeposit(address _account) public view returns(uint256) {
+        // total(總共質押代幣數量)
         uint256 total;
+        // 迭代每筆質押記錄計算總共數量
+        // Q: 是否在每次質押中就去記錄總共質押數量比較好?
         for(uint256 i = 0; i < depositsOf[_account].length; i++) {
             total += depositsOf[_account][i].amount;
         }
@@ -161,10 +187,18 @@ contract TimeLockPool is BasePool, ITimeLockPool {
         return total;
     }
 
+    /**
+    * 查詢特定錢包地址全部質押記錄函式 只讀 公共外部函式
+    * @param _account address型態 錢包地址
+    */
     function getDepositsOf(address _account) public view returns(Deposit[] memory) {
         return depositsOf[_account];
     }
 
+    /**
+    * 查詢特定錢包地址質押次數函式 只讀 公共外部函式
+    * @param _account address型態 錢包地址
+    */
     function getDepositsOfLength(address _account) public view returns(uint256) {
         return depositsOf[_account].length;
     }

@@ -4,6 +4,7 @@ import sleep from "../../utils/sleep";
 
 const VERIFY_DELAY = 100000;
 
+// 任務名稱 deploy-test-faucet-token testFaucetToken合約部屬
 task("deploy-test-faucet-token")
     .addParam("name")
     .addParam("symbol")

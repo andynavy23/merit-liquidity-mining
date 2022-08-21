@@ -10,6 +10,7 @@ const LP = "0xcCb63225a7B19dcF66717e4d40C9A72B39331d61";
 const multisig = "0x7e9e4c0876b2102f33a1d82117cc73b7fddd0032";
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
+// 任務名稱 deploy-liquidity-mining 將所有合約部屬
 task("deploy-liquidity-mining")
     .addFlag("verify")
     .setAction(async(taskArgs, { run, ethers }) => {

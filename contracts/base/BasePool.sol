@@ -40,9 +40,9 @@ abstract contract BasePool is ERC20Votes, AbstractRewards, IBasePool, TokenSaver
     using SafeCast for int256;
 
     // immutable與constant都是不可變量的關鍵字, 差別在於constant需要在編譯前設置, immutable可於構造函式中設置
-    // 宣告 公共 IERC20型態 名為depositToken的不可變量
+    // 宣告 公共 IERC20型態 名為depositToken的不可變量 質押代幣
     IERC20 public immutable depositToken;
-    // 宣告 公共 IERC20型態 名為rewardToken的不可變量
+    // 宣告 公共 IERC20型態 名為rewardToken的不可變量 獎勵代幣
     IERC20 public immutable rewardToken;
     // 宣告 公共 ITimeLockPool型態 名為escrowPool的不可變量 託管池
     ITimeLockPool public immutable escrowPool;

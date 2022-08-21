@@ -5,6 +5,7 @@ import sleep from "../../utils/sleep";
 
 const VERIFY_DELAY = 100000;
 
+// 任務名稱 deploy-liquidity-mining-manager liquidityMiningManager合約部屬
 task("deploy-liquidity-mining-manager")
     .addParam("rewardToken", "Address of token used as reward")
     .addParam("rewardSource", "Address where the tokens are send from, this address needs to set an approval")

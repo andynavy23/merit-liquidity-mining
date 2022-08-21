@@ -3,6 +3,7 @@ import { TokenSaver__factory, View__factory } from "../../typechain";
 import sleep from "../../utils/sleep";
 const VERIFY_DELAY = 100000;
 
+// 任務名稱 deploy-token-saver tokenSaver合約部屬
 task("deploy-token-saver")
     .setAction(async(taskArgs, { ethers, run }) => {
         const signers = await ethers.getSigners();
