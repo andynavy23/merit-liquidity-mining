@@ -128,6 +128,7 @@ contract LiquidityMiningManager is TokenSaver {
         totalWeight += _weight;
 
         // 將目前合約的獎勵代幣的轉移權限批准最大數量給此次添加的質押池
+        // Q: 這邊批准後續沒有再批准的動作是否會造成數量不夠?
         // Approve max token amount
         reward.safeApprove(_poolContract, type(uint256).max);
 
@@ -158,6 +159,7 @@ contract LiquidityMiningManager is TokenSaver {
         pools.pop();
         // 將此次質押池記錄未添加
         poolAdded[poolAddress] = false;
+        // Q: 移除質押池後沒有修改批准獎勵轉移權限是否會造成漏洞產生?
 
         // 記錄PoolRemoved事件
         emit PoolRemoved(_poolId, poolAddress);
