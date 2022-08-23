@@ -13,6 +13,7 @@ import "./interfaces/IBasePool.sol";
 import "./base/TokenSaver.sol";
 
 // TimeLockPool繼承自BasePool抽象合約, 以及ITimeLockPool接口
+// LiquidityMiningManager管理對質押池的分配。它公開了允許添加和刪除池的外部函數。它還允許設置每秒分配以及每個礦池將獲得這些獎勵的份額。
 contract LiquidityMiningManager is TokenSaver {
     // SafeERC20是以更安全的方式實現Transfer/Approve，當低級調用失敗時發出錯誤訊息並將transaction revert
     // 將名為SafeERC20的library裡面撰寫的函式使用在IERC20型態的變數上，將IERC20型態的變數作為函式第一個參數傳入

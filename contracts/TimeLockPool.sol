@@ -16,6 +16,7 @@ import "./base/BasePool.sol";
 import "./interfaces/ITimeLockPool.sol";
 
 // TimeLockPool繼承自BasePool抽象合約, 以及ITimeLockPool接口
+// TimeLockPool添加外部函數來存入代幣並作為回報接收TimeLockPool份額。更長鎖定持續時間的獎勵是可配置的。
 contract TimeLockPool is BasePool, ITimeLockPool {
     // Math是以更標準的方式實現數學運算
     // 將名為Math的library裡面撰寫的函式使用在uint256型態的變數上，將uint256型態的變數作為函式第一個參數傳入

@@ -6,6 +6,7 @@ pragma solidity 0.8.7; // 指定solidity版本其他版本會導致編譯錯誤
 import "./TimeLockPool.sol";
 
 // TimeLockNonTransferablePool繼承自TimeLockPool合約
+// TimeLockNonTransferablePool刪除池份額的可轉移性。
 contract TimeLockNonTransferablePool is TimeLockPool {
     // 構造函式, 創建合約時首先執行的函式
     // 繼承的父合約的構造函式需要填入參數時也需要在這邊填入
